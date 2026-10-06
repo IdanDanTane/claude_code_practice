@@ -42,11 +42,14 @@
   --gutter: clamp(16px, 4vw, 40px);
   --max: 1360px;
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --seg-active: #ffffff;
+  --focus-ring: rgba(0, 113, 227, 0.5);
   color-scheme: light;
 }
 
+/* Dark tokens: follow the OS unless the viewer chose light, and always apply when they chose dark. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #000000;
     --surface: #1c1c1e;
     --surface-2: #232325;
@@ -77,8 +80,45 @@
     --shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
     --shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1);
     --shadow-sheet: -20px 0 60px rgba(0, 0, 0, 0.6);
+    --seg-active: #636366;
+    --focus-ring: rgba(41, 151, 255, 0.5);
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #232325;
+  --surface-glass: rgba(22, 22, 23, 0.72);
+  --text: #f5f5f7;
+  --text-2: #a1a1a6;
+  --text-3: #86868b;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-strong: rgba(255, 255, 255, 0.18);
+  --fill: rgba(118, 118, 128, 0.24);
+  --fill-hover: rgba(118, 118, 128, 0.34);
+
+  --blue: #2997ff;
+  --green: #30d158;
+  --green-dot: #30d158;
+  --orange: #ff9f0a;
+  --orange-dot: #ff9f0a;
+  --red: #ff453a;
+  --red-dot: #ff453a;
+  --purple: #bf5af2;
+  --teal: #64d2ff;
+
+  --tint-green: rgba(48, 209, 88, 0.16);
+  --tint-orange: rgba(255, 159, 10, 0.18);
+  --tint-red: rgba(255, 69, 58, 0.18);
+  --tint-blue: rgba(41, 151, 255, 0.16);
+
+  --shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-hover: 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-sheet: -20px 0 60px rgba(0, 0, 0, 0.6);
+  --seg-active: #636366;
+  --focus-ring: rgba(41, 151, 255, 0.5);
+  color-scheme: dark;
 }
 
 /* ==========================================================================
@@ -99,7 +139,7 @@ body {
 }
 button, select, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 3px solid color-mix(in srgb, var(--blue) 50%, transparent); outline-offset: 2px; border-radius: 6px; }
+:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; border-radius: 6px; }
 
 .wrap { max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
 
@@ -124,8 +164,7 @@ button { cursor: pointer; }
   border: 0; background: transparent; padding: 4px 12px; border-radius: 7px; font-size: 13px; font-weight: 500;
   transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
-.segmented button[aria-pressed="true"] { background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
-@media (prefers-color-scheme: dark) { .segmented button[aria-pressed="true"] { background: #636366; } }
+.segmented button[aria-pressed="true"] { background: var(--seg-active); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
 
 .select {
   appearance: none; -webkit-appearance: none;
@@ -136,6 +175,26 @@ button { cursor: pointer; }
   max-width: 180px;
 }
 .select:hover, .btn-plain:hover { background-color: var(--fill-hover); }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+/* Narrower screens: brand + actions share the first row, filters get their own. */
+@media (max-width: 1180px) {
+  .header-actions { order: 1; }
+  .filters { order: 2; width: 100%; }
+}
+.icon-btn {
+  border: 0; background: var(--fill); width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--text); transition: background 0.2s var(--ease);
+}
+.icon-btn:hover { background: var(--fill-hover); }
+.icon-btn svg { width: 16px; height: 16px; }
+.btn-primary {
+  border: 0; background: var(--blue); color: #fff; font-size: 13px; font-weight: 500;
+  padding: 6px 14px; border-radius: 980px; display: inline-flex; align-items: center; gap: 6px;
+  transition: opacity 0.2s var(--ease);
+}
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.55; cursor: progress; }
+.btn-primary svg { width: 14px; height: 14px; }
 .btn-plain { border: 0; background: transparent; color: var(--blue); font-size: 13px; font-weight: 500; padding: 6px 8px; border-radius: 8px; }
 
 /* ==========================================================================
@@ -306,3 +365,22 @@ footer a { color: var(--blue); text-decoration: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ==========================================================================
+   PDF export: lay out at a fixed desktop width regardless of the viewport,
+   so a PDF made on a phone or narrow window looks the same as on desktop.
+   ========================================================================== */
+body.exporting main.wrap { width: 1240px; max-width: none; padding: 0 24px; }
+body.exporting .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.exporting .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body.exporting .span-2 { grid-column: span 2; }
+body.exporting .kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+body.exporting .kpi { padding: 16px 18px; }
+body.exporting .kpi-value { font-size: 34px; }
+body.exporting .kpi-value small { display: inline; font-size: 18px; margin: 0; }
+body.exporting .kpi-foot { font-size: 12.5px; }
+body.exporting .card { padding: 20px 22px; }
+body.exporting .table-wrap { overflow: visible; margin: 0; padding: 0; }
+body.exporting .hide-sm { display: table-cell; }
+body.exporting .hero { padding-top: 8px; }
+body.exporting #risk-all { visibility: hidden; }

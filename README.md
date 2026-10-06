@@ -7,4 +7,6 @@ An Apple-style executive dashboard for the COO and CEO. It covers SLA compliance
 - Product spec: [spec.md](spec.md)
 - Working rules and change log: [practice.md](practice.md)
 
+Features: KPI tiles with drill-down, filters (shareable via URL), light/dark toggle, and one-click **Export PDF** for board packs and email.
+
 Runs entirely in the browser on deterministic mock data. To run it locally, serve the folder with any static server (for example `npx serve .`) and open the printed URL. ES modules don't load over `file://`.

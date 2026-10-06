@@ -1,6 +1,6 @@
 # Logistics & Warehouse Executive Dashboard — Spec
 
-_Last updated: 2026-10-07 (v1 built)_
+_Last updated: 2026-10-07 (v1.1: PDF export, theme toggle)_
 
 ## 1. Purpose
 Give the COO and CEO one glanceable page that answers three questions:
@@ -22,7 +22,7 @@ Apple-inspired (Apple Human Interface Guidelines feel):
 - Light canvas `#f5f5f7`, white cards, 18px radius, soft layered shadows, generous whitespace.
 - Translucent sticky header (`backdrop-filter: blur`).
 - Apple system colors for status: green `#34c759` (on target), orange `#ff9500` (watch), red `#ff3b30` (action), blue `#0071e3` (neutral/accent).
-- Automatic dark mode following the OS setting.
+- Light and dark mode. By default it follows the OS setting. A sun/moon button in the header switches it manually, and the choice is remembered in this browser.
 - Large numerals and quiet labels. No chart junk: thin gridlines, no 3D, minimal legends.
 - Responsive down to phone width (375px).
 
@@ -73,7 +73,7 @@ Applies to open orders (see §5). Score 0–100, the sum of:
 Reason chips show the top contributors: _Past promise_, _Tight window_, _Carrier delay_, _Out of stock_, _Low stock_, _Not shipped_.
 
 ## 7. Layout
-1. **Header**: translucent sticky bar with filters (period 7/30/90 days, region, warehouse, carrier) and a reset button.
+1. **Header**: translucent sticky bar with filters (period 7/30/90 days, region, warehouse, carrier), a reset button, the light/dark toggle and **Export PDF**. On narrower screens the brand and actions share the top row and the filters wrap below.
    **Hero**: scope + "Data as of" date, a one-line verdict (e.g. "Service needs attention."), a generated plain-English summary of the biggest issues, and a status pill counting tiles that need action, need watching, or are on target.
 2. **KPI tiles**: grid of 9 tiles grouped as _Service_ (SLA %, breaches, at risk, likely cancellations), _Inventory_ (stockouts, turnover, days of supply) and _Cost_ (cost/order, cost/shipment).
 3. **Service**: SLA compliance trend (daily line vs the 95% target) and breaches by region (bar).
@@ -92,10 +92,21 @@ Reason chips show the top contributors: _Past promise_, _Tight window_, _Carrier
   - Any order row → order detail (timeline, product, cost, risk reasons).
 - Filters are reflected in the URL hash, so a link reproduces the view.
 
+## 8a. PDF export
+- **Export PDF** downloads a 3-page A4 landscape PDF of the current view, with the active filters applied:
+  1. Executive summary + all KPI tiles
+  2. Service (SLA trend, breaches by region) + top 10 orders at risk
+  3. Inventory health + carriers & cost
+- Each page has a header (title, scope + period, data date, export timestamp) and a footer (source note, page X of Y).
+- The PDF is always rendered in **light mode** at a fixed desktop layout, so it looks the same whether exported from a phone or a desktop, or in dark mode.
+- Sections are never split across pages. If a page's content is too tall, it is scaled down to fit.
+- File name: `logistics-overview-<data date>-<scope>-<period>d.pdf`, e.g. `logistics-overview-2026-10-07-global-network-30d.pdf`.
+- Built client-side with html2canvas + jsPDF from cdnjs, loaded only the first time someone exports.
+
 ## 9. Hosting
 Static site served by **GitHub Pages** from the `main` branch root of `IdanDanTane/claude_code_practice` (public repo). Every push redeploys automatically.
 
 Live URL: https://idandantane.github.io/claude_code_practice/
 
 ## 10. Out of scope (for now)
-Authentication, live data connection, editing data, alert notifications, exports.
+Authentication, live data connection, editing data, alert notifications, CSV/Excel exports, scheduled PDF delivery.

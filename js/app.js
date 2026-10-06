@@ -1,6 +1,7 @@
 import { getData, DAY } from './data.js';
 import * as K from './kpis.js';
-import { lineChart, barChart, doughnutChart, tokens, statusColor } from './charts.js';
+import { lineChart, barChart, doughnutChart, tokens, statusColor, setAnimate } from './charts.js';
+import { exportPdf } from './export.js';
 
 const data = getData();
 const whById = Object.fromEntries(data.warehouses.map((w) => [w.id, w]));
@@ -602,9 +603,83 @@ function render() {
   renderCarriers(current);
 }
 
+// ---------------------------------------------------------------------------
+// Light / dark toggle. No saved choice = follow the OS.
+// ---------------------------------------------------------------------------
+const THEME_KEY = 'logistics-theme';
+const root = document.documentElement;
+const darkMq = matchMedia('(prefers-color-scheme: dark)');
+const isDark = () => (root.dataset.theme ? root.dataset.theme === 'dark' : darkMq.matches);
+const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+
+function paintThemeButton() {
+  const dark = isDark();
+  const label = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  const btn = $('theme-toggle');
+  btn.innerHTML = dark ? ICON_SUN : ICON_MOON;
+  btn.setAttribute('aria-label', label);
+  btn.title = label;
+}
+
+$('theme-toggle').addEventListener('click', () => {
+  const next = isDark() ? 'light' : 'dark';
+  root.dataset.theme = next;
+  try { localStorage.setItem(THEME_KEY, next); } catch { /* storage unavailable: choice lasts for this visit */ }
+  paintThemeButton();
+  render();
+});
+darkMq.addEventListener('change', () => {
+  if (root.dataset.theme) return; // an explicit choice wins over the OS
+  paintThemeButton();
+  render();
+});
+
+// ---------------------------------------------------------------------------
+// PDF export: always rendered in light mode, without chart animations.
+// ---------------------------------------------------------------------------
+$('export-pdf').addEventListener('click', async () => {
+  const btn = $('export-pdf');
+  const label = btn.querySelector('span');
+  btn.disabled = true;
+  label.textContent = 'Preparing…';
+  const prevTheme = root.dataset.theme;
+  if ($('sheet').classList.contains('open')) closeSheet();
+  let failed = false;
+  try {
+    root.dataset.theme = 'light';
+    document.body.classList.add('exporting');
+    setAnimate(false);
+    render();
+    // Charts draw synchronously with animation off; a short tick lets layout settle.
+    // (Not requestAnimationFrame: it never fires while the tab is in the background.)
+    await new Promise((r) => setTimeout(r, 60));
+    const s = [...document.querySelectorAll('main > section')];
+    const slug = scopeLabel().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    await exportPdf({
+      pages: [[s[0], s[1]], [s[2], s[3]], [s[4], s[5]]],
+      title: 'Logistics Overview',
+      subtitle: `${scopeLabel()} · Last ${state.days} days`,
+      asOf: `Data as of ${dLong.format(data.now)}`,
+      filename: `logistics-overview-${new Date(data.now).toISOString().slice(0, 10)}-${slug}-${state.days}d.pdf`,
+    });
+  } catch (err) {
+    console.error(err);
+    failed = true;
+  } finally {
+    if (prevTheme) root.dataset.theme = prevTheme; else delete root.dataset.theme;
+    document.body.classList.remove('exporting');
+    setAnimate(true);
+    render();
+    btn.disabled = false;
+    label.textContent = failed ? 'Export failed — retry' : 'Export PDF';
+    if (failed) setTimeout(() => { label.textContent = 'Export PDF'; }, 4000);
+  }
+});
+
 if (window.Chart) {
   Chart.defaults.font.family = tokens().font;
 }
+paintThemeButton();
 buildFilters();
 render();
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);

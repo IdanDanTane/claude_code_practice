@@ -1,6 +1,10 @@
 // Thin Chart.js wrappers that pull every color from the CSS design tokens.
 /* global Chart */
 
+let animate = true;
+/** Turn chart animations off (e.g. while capturing a PDF) and back on. */
+export function setAnimate(on) { animate = on; }
+
 export function tokens() {
   const s = getComputedStyle(document.documentElement);
   const v = (n) => s.getPropertyValue(n).trim();
@@ -20,7 +24,7 @@ function base(t, { onClick, yFormat, xGrid = false, yGrid = true, tooltipFormat 
   return {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 450, easing: 'easeOutQuart' },
+    animation: animate ? { duration: 450, easing: 'easeOutQuart' } : false,
     interaction: { mode: 'index', intersect: false },
     layout: { padding: { top: 4, right: 4 } },
     onClick: onClick ? (_e, els) => { if (els.length) onClick(els[0].index); } : undefined,
@@ -127,7 +131,7 @@ export function doughnutChart(canvas, { labels, data, colors, onClick, tooltipFo
     data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: t.surface, borderWidth: 3, hoverOffset: 6 }] },
     options: {
       responsive: true, maintainAspectRatio: false, cutout: '68%',
-      animation: { duration: 450 },
+      animation: animate ? { duration: 450 } : false,
       onClick: onClick ? (_e, els) => { if (els.length) onClick(els[0].index); } : undefined,
       onHover: onClick ? (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; } : undefined,
       plugins: {
