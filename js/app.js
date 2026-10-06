@@ -43,6 +43,16 @@ function riskBar(score) {
   const c = statusColor(tokens(), s);
   return `<div class="riskbar"><div class="track"><div class="fill" style="width:${score}%;background:${c}"></div></div><b>${score}</b></div>`;
 }
+/** Copy each column header onto its cells so phones can show rows as labelled cards. */
+function labelTables(scope = document) {
+  for (const table of scope.querySelectorAll('table.data')) {
+    const heads = [...table.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+    for (const tr of table.querySelectorAll('tbody tr')) {
+      [...tr.children].forEach((td, i) => { if (heads[i] && td.children.length + td.textContent.trim().length) td.dataset.label = heads[i]; });
+    }
+  }
+}
+
 function orderStatus(o, now) {
   if (o.cancelledAt && o.cancelledAt <= now) return '<span class="pill gray">Cancelled</span>';
   if (o.deliveredAt) return o.deliveredAt <= o.promisedAt ? '<span class="pill green">On time</span>' : '<span class="pill red">Late</span>';
@@ -347,20 +357,20 @@ function renderRisk(m) {
   $('risk-summary').innerHTML = m.risk.atRisk.length
     ? `<b style="color:var(--text)">${fmt.int(m.risk.atRisk.length)}</b> at risk · ${fmt.usd0(value)} order value · <b style="color:var(--text)">${fmt.int(m.risk.cancel.length)}</b> likely to cancel`
     : 'No open orders at risk';
-  $('risk-all').hidden = m.risk.atRisk.length <= 10;
+  $('risk-all').hidden = m.risk.atRisk.length <= 5; // phones show the top 5 only
   $('t-risk').innerHTML = top.length ? `
     <thead><tr>
-      <th>Order</th><th class="hide-sm">Customer</th><th>Site</th><th class="hide-sm">Carrier</th><th>Promise</th><th>Risk</th><th>Why</th>
+      <th>Order</th><th class="hide-sm hide-md">Customer</th><th>Site</th><th class="hide-sm">Carrier</th><th>Promise</th><th>Risk</th><th>Why</th>
     </tr></thead>
     <tbody>${top.map((r) => `
       <tr class="clickable" data-order="${r.order.id}">
         <td class="mono">${r.order.id}</td>
-        <td class="hide-sm">${esc(r.order.customer)}</td>
+        <td class="hide-sm hide-md">${esc(r.order.customer)}</td>
         <td>${esc(whById[r.order.warehouse].name)}</td>
         <td class="hide-sm">${esc(carrierById[r.order.carrier].name)}</td>
         <td>${dueText(r.order, m.now)}</td>
-        <td>${riskBar(r.score)}</td>
-        <td>${chips(r.reasons)}</td>
+        <td class="wide">${riskBar(r.score)}</td>
+        <td class="wide">${chips(r.reasons)}</td>
       </tr>`).join('')}
     </tbody>` : '<tbody><tr><td class="muted" style="padding:28px 10px;text-align:center">Nothing at risk for this selection 🎉</td></tr></tbody>';
 }
@@ -411,7 +421,7 @@ function renderCarriers(m) {
       const st = K.status('sla', c.onTimePct);
       return `<tr class="clickable" data-carrier="${c.carrier.id}">
         <td><span class="dot ${st}" style="margin-right:8px"></span>${esc(c.carrier.name)}</td>
-        <td><div style="display:flex;align-items:center;gap:10px"><b style="font-weight:600;width:52px">${fmt.pct(c.onTimePct)}</b>
+        <td class="wide"><div style="display:flex;align-items:center;gap:10px"><b style="font-weight:600;width:52px">${fmt.pct(c.onTimePct)}</b>
           <div class="bar-inline" style="flex:1"><div style="width:${(c.onTimePct || 0) * 100}%;background:${statusColor(t, st)}"></div></div></div></td>
         <td class="num hide-sm">${fmt.int(c.shipped)}</td>
         <td class="num">${fmt.usd(c.perShipment)}</td>
@@ -443,6 +453,7 @@ function openSheet(title, sub, html) {
   $('sheet-title').textContent = title;
   $('sheet-sub').textContent = sub || '';
   $('sheet-body').innerHTML = html;
+  labelTables($('sheet-body'));
   $('sheet-body').scrollTop = 0;
   $('sheet').classList.add('open');
   $('sheet').setAttribute('aria-hidden', 'false');
@@ -490,7 +501,7 @@ function openRiskList(title, sub, list) {
         <tr class="clickable" data-order="${r.order.id}">
           <td class="mono">${r.order.id}</td><td>${esc(whById[r.order.warehouse].name)}</td>
           <td class="hide-sm">${esc(carrierById[r.order.carrier].name)}</td><td>${dueText(r.order, data.now)}</td>
-          <td>${riskBar(r.score)}</td><td>${chips(r.reasons)}</td>
+          <td class="wide">${riskBar(r.score)}</td><td class="wide">${chips(r.reasons)}</td>
         </tr>`).join('')}</tbody>
     </table></div>${capNote(list.length)}` : '<div class="empty" style="height:200px">Nothing at risk 🎉</div>');
 }
@@ -601,6 +612,7 @@ function render() {
   renderRisk(current);
   renderInventory(current);
   renderCarriers(current);
+  labelTables();
 }
 
 // ---------------------------------------------------------------------------

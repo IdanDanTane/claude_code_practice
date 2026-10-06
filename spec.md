@@ -1,6 +1,6 @@
 # Logistics & Warehouse Executive Dashboard — Spec
 
-_Last updated: 2026-10-07 (v1.1: PDF export, theme toggle)_
+_Last updated: 2026-10-07 (v1.2: accessibility + responsive pass)_
 
 ## 1. Purpose
 Give the COO and CEO one glanceable page that answers three questions:
@@ -21,10 +21,13 @@ Apple-inspired (Apple Human Interface Guidelines feel):
 - System font stack (`-apple-system, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif`).
 - Light canvas `#f5f5f7`, white cards, 18px radius, soft layered shadows, generous whitespace.
 - Translucent sticky header (`backdrop-filter: blur`).
-- Apple system colors for status: green `#34c759` (on target), orange `#ff9500` (watch), red `#ff3b30` (action), blue `#0071e3` (neutral/accent).
+- Apple system colors for status: green (on target), orange (watch), red (action), blue (neutral/accent). Light mode uses Apple's **accessible** variants (e.g. blue `#0066cc`, status dots `#2a9d4a` / `#d67a00` / `#e8291e`), so every text pair meets WCAG AA (≥ 4.5:1) and every status mark is ≥ 3:1, in both themes.
 - Light and dark mode. By default it follows the OS setting. A sun/moon button in the header switches it manually, and the choice is remembered in this browser.
 - Large numerals and quiet labels. No chart junk: thin gridlines, no 3D, minimal legends.
-- Responsive down to phone width (375px).
+- Responsive from phone (375px) to large desktop, and readable in both themes at every width:
+  - **Desktop (> 1100px):** full multi-column layout with sticky header and full tables.
+  - **Tablet (641–1100px):** the Customer column in the at-risk table is hidden (it's still in the drill-down), and charts stack to one column below 960px.
+  - **Phone (≤ 640px):** two KPI tiles per row; the header scrolls away instead of pinning; section titles stack above their subtitles; every table becomes stacked cards with labelled fields (no sideways scrolling); the at-risk list shows the top 5 with "View all" for the rest; header controls are ≥ 32px tall for touch.
 
 ## 4. Data
 Realistic **mock data** is generated in the browser by a seeded generator (`js/data.js`). The seed is fixed, so the numbers are stable across reloads. A real WMS/ERP feed can replace it later by producing the same shapes.
