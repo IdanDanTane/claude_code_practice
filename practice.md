@@ -23,6 +23,7 @@ js/data.js        seeded mock data generator
 js/kpis.js        pure KPI functions
 js/charts.js      Chart.js wrappers
 js/app.js         filters, rendering, drill-down
+js/package.json   marks js/ as ES modules so Node can run KPI checks
 spec.md           product spec
 practice.md       this file
 ```
@@ -34,3 +35,4 @@ practice.md       this file
 | 2026-10-07 | Made repo public and enabled GitHub Pages (`main` / root). Live at https://idandantane.github.io/claude_code_practice/ |
 | 2026-10-07 | Added Apple-style design tokens (`css/styles.css`, with light + dark mode) and the page shell (`index.html`): translucent header with filters, hero, sections for Service, At-risk, Inventory and Carriers, and the drill-down sheet. |
 | 2026-10-07 | Added seeded mock data generator (`js/data.js`: ~11.7k orders over 180 days, 6 warehouses, 5 fictional carriers, 80 SKUs) and pure KPI functions (`js/kpis.js`). Built-in storylines: Atlas Parcel's reliability drops over the last 3 weeks; Singapore has stockouts and slow processing. Added `js/package.json` (`type: module`) so the same files run in Node for KPI sanity checks. |
+| 2026-10-07 | Built v1 of the dashboard: `js/charts.js` (Chart.js wrappers themed from CSS tokens) and `js/app.js` (filters synced to the URL hash, 9 KPI tiles with deltas and status, generated executive summary, SLA trend, breaches by region/warehouse, at-risk table, inventory charts, carrier scorecard, weekly cost trend, drill-down sheet with order detail). Verified locally in light/dark mode and at 375px; no console errors. Spec updated with exact KPI definitions as built. |
