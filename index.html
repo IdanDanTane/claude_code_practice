@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logistics Overview</title>
+  <meta name="description" content="Executive logistics and warehouse dashboard: SLA, at-risk orders, inventory health, cost and carriers.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230071e3'/%3E%3Cpath d='M8 12l8-4 8 4v9l-8 4-8-4z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M8 12l8 4 8-4M16 16v9' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 8l8-4 8 4v8l-8 4-8-4z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>
+        </span>
+        Logistics
+      </div>
+      <div class="filters" role="group" aria-label="Filters">
+        <div class="segmented" id="f-period" role="group" aria-label="Period">
+          <button type="button" data-days="7" aria-pressed="false">7D</button>
+          <button type="button" data-days="30" aria-pressed="true">30D</button>
+          <button type="button" data-days="90" aria-pressed="false">90D</button>
+        </div>
+        <label class="sr-only" for="f-region">Region</label>
+        <select class="select" id="f-region"></select>
+        <label class="sr-only" for="f-warehouse">Warehouse</label>
+        <select class="select" id="f-warehouse"></select>
+        <label class="sr-only" for="f-carrier">Carrier</label>
+        <select class="select" id="f-carrier"></select>
+        <button type="button" class="btn-plain" id="f-reset">Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow" id="asof"></p>
+      <h1 id="headline">Network overview</h1>
+      <p class="lede" id="lede"></p>
+      <div id="headline-status"></div>
+    </section>
+
+    <section class="section" aria-labelledby="kpi-h">
+      <h2 id="kpi-h" class="sr-only">Key indicators</h2>
+      <div id="kpis"></div>
+    </section>
+
+    <section class="section" aria-labelledby="svc-h">
+      <div class="section-head"><h2 id="svc-h">Service</h2><span class="sub">Are we keeping our promises?</span></div>
+      <div class="grid grid-3">
+        <div class="card span-2">
+          <h3>SLA compliance</h3>
+          <p class="card-sub">Daily on-time delivery rate against the 95% target</p>
+          <div class="chart-box"><canvas id="c-sla" aria-label="SLA compliance trend"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Breaches by region</h3>
+          <p class="card-sub">Late deliveries and overdue open orders</p>
+          <div class="chart-box"><canvas id="c-breach" aria-label="SLA breaches by region"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="risk-h">
+      <div class="section-head"><h2 id="risk-h">Orders at risk</h2><span class="sub">Open orders most likely to be delayed or cancelled</span></div>
+      <div class="card">
+        <div class="card-actions">
+          <div id="risk-summary" class="muted"></div>
+          <button type="button" class="btn-plain" id="risk-all">View all ›</button>
+        </div>
+        <div class="table-wrap"><table class="data" id="t-risk"></table></div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="inv-h">
+      <div class="section-head"><h2 id="inv-h">Inventory health</h2><span class="sub">Stock availability and age</span></div>
+      <div class="grid grid-3">
+        <div class="card">
+          <h3>Stockouts by warehouse</h3>
+          <p class="card-sub">SKUs at zero with open demand</p>
+          <div class="chart-box short"><canvas id="c-stockout" aria-label="Stockouts by warehouse"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Stock age</h3>
+          <p class="card-sub">Share of inventory value by days since receipt</p>
+          <div class="chart-box short"><canvas id="c-aging" aria-label="Stock aging"></canvas></div>
+        </div>
+        <div class="card">
+          <h3>Days of supply</h3>
+          <p class="card-sub">Target band 20–45 days</p>
+          <div class="chart-box short"><canvas id="c-dos" aria-label="Days of supply by warehouse"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="car-h">
+      <div class="section-head"><h2 id="car-h">Carriers &amp; cost</h2><span class="sub">Who delivers, and at what price</span></div>
+      <div class="grid grid-3">
+        <div class="card span-2">
+          <h3>Carrier scorecard</h3>
+          <p class="card-sub">Ranked by on-time delivery in the selected period</p>
+          <div class="table-wrap"><table class="data" id="t-carrier"></table></div>
+        </div>
+        <div class="card">
+          <h3>Cost per order</h3>
+          <p class="card-sub">Weekly, shipping + fulfillment</p>
+          <div class="chart-box short"><canvas id="c-cost" aria-label="Cost per order trend"></canvas></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    Mock data generated in the browser · <a href="https://github.com/IdanDanTane/claude_code_practice">Source</a> · <a href="https://github.com/IdanDanTane/claude_code_practice/blob/main/spec.md">Spec</a>
+  </footer>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+    <div class="sheet-head">
+      <div>
+        <h2 id="sheet-title"></h2>
+        <p id="sheet-sub"></p>
+      </div>
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </aside>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

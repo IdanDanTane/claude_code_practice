@@ -31,3 +31,5 @@ practice.md       this file
 | Date | Change |
 |------|--------|
 | 2026-10-07 | Project kickoff. Wrote `spec.md`, `practice.md`, `README.md`. Decisions: mock data, GitHub Pages (public repo), English LTR, KPIs = SLA, at-risk orders, inventory health, cost & carriers, multi-region network, filters + drill-down, plain HTML/CSS/JS. |
+| 2026-10-07 | Made repo public and enabled GitHub Pages (`main` / root). Live at https://idandantane.github.io/claude_code_practice/ |
+| 2026-10-07 | Added Apple-style design tokens (`css/styles.css`, with light + dark mode) and the page shell (`index.html`): translucent header with filters, hero, sections for Service, At-risk, Inventory and Carriers, and the drill-down sheet. |
