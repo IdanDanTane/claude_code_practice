@@ -3,8 +3,8 @@ import { DAY } from './data.js';
 
 export const TARGETS = {
   sla: 0.95,
-  costPerOrder: 14.0,
-  costPerShipment: 9.5,
+  costPerOrder: 18.0,
+  costPerShipment: 13.0,
   dosLow: 20,
   dosHigh: 45,
   riskThreshold: 60,

@@ -45,21 +45,50 @@ const CARRIER_MIX = {
   APAC: { PSW: 0.4, ATL: 0.35, MER: 0.25 },
 };
 
+// Phone accessories catalog: [product, unit cost USD]. Each product comes in two variants.
 const CATEGORIES = {
-  Electronics: { nouns: ['Wireless Earbuds', 'Smart Speaker', 'USB-C Hub', 'Tablet Stand', 'Charging Dock', 'Webcam', 'Portable SSD', 'Keyboard', 'Monitor Arm', 'Power Bank'], cost: [18, 240] },
-  Home: { nouns: ['Air Purifier', 'Desk Lamp', 'Coffee Grinder', 'Kettle', 'Throw Blanket', 'Storage Bin', 'Wall Clock', 'Diffuser'], cost: [9, 160] },
-  Apparel: { nouns: ['Rain Jacket', 'Running Shoe', 'Merino Tee', 'Fleece Hoodie', 'Travel Backpack', 'Cap'], cost: [8, 95] },
-  Health: { nouns: ['Yoga Mat', 'Water Bottle', 'Fitness Band', 'Massage Gun', 'Scale'], cost: [6, 130] },
-  Office: { nouns: ['Notebook Set', 'Desk Organizer', 'Ergo Chair Cushion', 'Pen Pack', 'Laptop Sleeve'], cost: [4, 70] },
+  Chargers: {
+    prefix: 'CHG', demand: 1.2, variants: ['White', 'Black'],
+    items: [['20W USB-C Wall Charger', 3.8], ['35W Dual USB-C Charger', 7.5], ['65W GaN Charger', 13.9],
+      ['15W Wireless Charging Pad', 6.2], ['3-in-1 Magnetic Charging Stand', 17.5], ['30W Car Charger', 4.6]],
+  },
+  Cables: {
+    prefix: 'CBL', demand: 1.6, variants: ['White', 'Black'],
+    items: [['USB-C to USB-C Cable 1m', 1.4], ['USB-C to USB-C Cable 2m', 2.1], ['USB-C to Lightning Cable 1m', 2.6],
+      ['Braided USB-C Cable 3m', 3.2], ['USB-A to USB-C Cable 1m', 1.1], ['Magnetic Charging Cable', 2.9]],
+  },
+  Audio: {
+    prefix: 'AUD', demand: 1.0, variants: ['White', 'Black'],
+    items: [['Wired Earphones USB-C', 3.4], ['Wired Earphones 3.5mm', 2.2], ['TWS Earbuds', 9.8],
+      ['TWS Earbuds ANC', 18.5], ['TWS Sport Earbuds', 12.4], ['Bluetooth Neckband', 7.9]],
+  },
+  'Power Banks': {
+    prefix: 'PWR', demand: 0.8, variants: ['Black', 'White'],
+    items: [['Power Bank 5,000mAh', 5.6], ['Power Bank 10,000mAh', 8.4], ['Power Bank 20,000mAh PD', 14.2],
+      ['Magnetic Power Bank 10,000mAh', 12.8], ['Slim Power Bank 5,000mAh', 6.9]],
+  },
+  'Creator Gear': {
+    prefix: 'CRT', demand: 0.6, variants: ['Black', 'White'],
+    items: [['Selfie Stick Tripod', 5.4], ['Bluetooth Selfie Stick', 4.1], ['10" Ring Light', 7.2],
+      ['18" Ring Light with Stand', 19.6], ['Clip-on Fill Light', 3.3], ['3-Axis Phone Gimbal', 26.0], ['Mini Phone Tripod', 2.8]],
+  },
+  Mounts: {
+    prefix: 'MNT', demand: 0.7, variants: ['Black', 'Silver'],
+    items: [['Magnetic Car Mount', 3.6], ['Car Vent Mount', 2.4], ['Bike Phone Mount', 4.3], ['Phone Grip Stand', 0.9]],
+  },
+  Protection: {
+    prefix: 'PRT', demand: 1.6, variants: ['6.1"', '6.7"'],
+    items: [['Clear Case', 1.2], ['Silicone Case', 1.8], ['Rugged Case', 3.4],
+      ['Tempered Glass Screen Protector', 0.6], ['Privacy Screen Protector', 1.1], ['Camera Lens Protector', 0.7]],
+  },
 };
-const ADJ = ['Pro', 'Air', 'Mini', 'Max', 'Lite', 'Plus', 'Studio', 'Go', 'One', 'Classic'];
 
+// Fictional retail partners and marketplaces that buy from us.
 const CUSTOMERS = [
-  'Halcyon Retail', 'Brightwater Co.', 'Northfield Stores', 'Cobalt & Pine', 'Lumen Outfitters', 'Vantage Home',
-  'Orchard Lane', 'Summit Supply', 'Kestrel Goods', 'Harbor & Main', 'Juniper Market', 'Atlas Living',
-  'Riverstone', 'Marlow & Finch', 'Bluebell Trading', 'Copperleaf', 'Evergreen Direct', 'Silverline Retail',
-  'Meadowbrook', 'Ironwood Co.', 'Sable Street', 'Westgate Stores', 'Pinecrest', 'Saltmarsh Goods',
-  'Tidewater Supply', 'Foxglove', 'Granite Peak', 'Larkspur & Co.', 'Oakhurst', 'Redfern Retail',
+  'VoltMart', 'CellCity Stores', 'PhoneHub Retail', 'ByteBox', 'Plug & Play Shop', 'Signal Street',
+  'Pocket Tech Co.', 'Wired Up Stores', 'Gadget Grove', 'Juno Wireless', 'Kestrel Telecom', 'Orbit Accessories',
+  'Volt & Vine', 'CasePoint', 'Metro Mobile Store', 'Sunline Electronics', 'Tap & Go Mobile', 'Northstar Telecom',
+  'Harbor Mobile', 'Brightcase Online', 'Lumen Mobile', 'Cobalt Wireless', 'Direct web store', 'Marketplace orders',
 ];
 
 let cache = null;
@@ -82,22 +111,20 @@ function generate() {
 
   // ---- SKUs -------------------------------------------------------------
   const skus = [];
-  const usedNames = new Set();
-  let n = 0;
-  while (skus.length < 80) {
-    const cat = pick(Object.keys(CATEGORIES));
-    const def = CATEGORIES[cat];
-    const name = `${pick(def.nouns)} ${pick(ADJ)}`;
-    if (usedNames.has(name)) continue;
-    usedNames.add(name);
-    n++;
-    skus.push({
-      id: `SKU-${String(1000 + n * 7)}`,
-      name,
-      category: cat,
-      unitCost: Math.round(between(def.cost[0], def.cost[1]) * 100) / 100,
-      popularity: Math.pow(rnd(), 2.2) + 0.03, // long-tail demand
-    });
+  for (const [category, def] of Object.entries(CATEGORIES)) {
+    let n = 0;
+    for (const [product, cost] of def.items) {
+      for (const variant of def.variants) {
+        n++;
+        skus.push({
+          id: `${def.prefix}-${String(100 + n)}`,
+          name: `${product} · ${variant}`,
+          category,
+          unitCost: Math.round(cost * between(0.95, 1.05) * 100) / 100,
+          popularity: (Math.pow(rnd(), 2.2) + 0.03) * def.demand, // long-tail demand, weighted by category
+        });
+      }
+    }
   }
   const popTotal = skus.reduce((s, k) => s + k.popularity, 0);
   const skuWeights = Object.fromEntries(skus.map((k) => [k.id, k.popularity / popTotal]));
@@ -109,10 +136,12 @@ function generate() {
   const invMap = new Map();
   for (const wh of WAREHOUSES) {
     // Singapore is the planted problem site: more stockouts.
-    const stockoutRate = wh.id === 'SIN' ? 0.13 : wh.id === 'SYD' ? 0.05 : 0.025;
+    const stockoutRate = wh.id === 'SIN' ? 0.11 : wh.id === 'SYD' ? 0.045 : 0.022;
     for (const sku of skus) {
+      // Lithium battery products (power banks, TWS) face air-freight limits, so they run out more often.
+      const battery = sku.category === 'Power Banks' || sku.name.startsWith('TWS');
       const r = rnd();
-      const stockout = r < stockoutRate;
+      const stockout = r < stockoutRate * (battery ? 2.6 : 1);
       const overstock = !stockout && r > 0.89;
       const pos = {
         sku: sku.id, warehouse: wh.id, region: wh.region,
@@ -153,7 +182,8 @@ function generate() {
       const carrier = carrierById[weighted(CARRIER_MIX[region])];
       const express = rnd() < 0.26;
       const slaDays = express ? 2 : 5;
-      const qty = Math.max(1, Math.round(Math.pow(rnd(), 2) * 8));
+      // Wholesale orders from retail partners: packs of 5, mostly small, some large replenishments.
+      const qty = 5 * Math.max(1, Math.round(Math.pow(rnd(), 1.5) * 20));
       const promisedAt = createdAt + slaDays * DAY;
       const pos = invMap.get(invKey(sku.id, wh.id));
 
@@ -187,14 +217,14 @@ function generate() {
       if (deliveredAt && deliveredAt > NOW) deliveredAt = null;
 
       const zone = region === 'APAC' ? 1.18 : region === 'EMEA' ? 1.04 : 1;
-      const shippingCost = round2((express ? 13.2 : 7.4) * carrier.costIndex * zone * (1 + (qty - 1) * 0.06) * between(0.88, 1.12));
-      const fulfillmentCost = round2((3.6 + qty * 0.45) * (wh.id === 'SIN' ? 1.12 : 1) * between(0.9, 1.1));
+      const shippingCost = round2((express ? 14 : 7.5) * carrier.costIndex * zone * (1 + qty * 0.012) * between(0.88, 1.12));
+      const fulfillmentCost = round2((2.4 + qty * 0.07) * (wh.id === 'SIN' ? 1.12 : 1) * between(0.9, 1.1));
 
       orders.push({
         id: `SO-${seq++}`,
         customer: pick(CUSTOMERS),
         region, warehouse: wh.id, carrier: carrier.id, sku: sku.id,
-        qty, value: round2(qty * sku.unitCost * between(1.45, 1.9)),
+        qty, value: round2(qty * sku.unitCost * between(2.2, 3.2)),
         cogs: round2(qty * sku.unitCost),
         shippingCost, fulfillmentCost,
         express, slaDays,
