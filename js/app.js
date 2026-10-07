@@ -37,7 +37,8 @@ function dueText(o, now) {
   return `<span class="muted">Due in ${nf1.format(h / 24)}d</span>`;
 }
 const REASON_COLOR = { 'Past promise': 'red', 'Out of stock': 'red', 'Carrier delay': 'orange', 'Tight window': 'orange', 'Low stock': 'orange', 'Not shipped': 'gray' };
-const chips = (reasons) => `<div class="chips">${reasons.map((r) => `<span class="pill ${REASON_COLOR[r] || 'gray'}">${esc(r)}</span>`).join('')}</div>`;
+const chips = (reasons) => `<div class="chips">${reasons.map((r) => `<span class="pill ${REASON_COLOR[r] || 'gray'}">${esc(r)}</span>`).join('')}${
+  reasons.length > 2 ? `<span class="pill gray more" title="${esc(reasons.slice(2).join(', '))}">+${reasons.length - 2}</span>` : ''}</div>`;
 function riskBar(score) {
   const s = score >= 85 ? 'red' : score >= 60 ? 'orange' : 'green';
   const c = statusColor(tokens(), s);
@@ -164,7 +165,7 @@ function compute() {
 // KPI tiles
 // ---------------------------------------------------------------------------
 function delta(cur, prev, { mode, goodUp, label }) {
-  if (cur == null || prev == null) return { text: '', cls: 'flat' };
+  if (cur == null || prev == null) return { val: '', label: '', cls: 'flat' };
   let d, text;
   if (mode === 'pts') { d = (cur - prev) * 100; text = `${nf1.format(Math.abs(d))} pts`; }
   else if (mode === 'abs') { d = cur - prev; text = nf0.format(Math.abs(d)); }
@@ -172,9 +173,9 @@ function delta(cur, prev, { mode, goodUp, label }) {
   else if (mode === 'usd') { d = cur - prev; text = usd.format(Math.abs(d)); }
   else { d = prev ? (cur - prev) / prev : 0; text = `${nf1.format(Math.abs(d) * 100)}%`; }
   const eps = mode === 'pct' ? 0.005 : mode === 'pts' ? 0.05 : 0.001;
-  if (Math.abs(d) < eps) return { text: `No change ${label}`, cls: 'flat' };
+  if (Math.abs(d) < eps) return { val: 'No change', label, cls: 'flat' };
   const up = d > 0;
-  return { text: `${up ? '▲' : '▼'} ${text} ${label}`, cls: up === goodUp ? 'good' : 'bad' };
+  return { val: `${up ? '▲' : '▼'} ${text}`, label, cls: up === goodUp ? 'good' : 'bad' };
 }
 
 function kpiDefs(m) {
@@ -193,7 +194,7 @@ function kpiDefs(m) {
         { id: 'risk', label: 'Orders at risk', value: fmt.int(m.risk.atRisk.length), sub: `of ${fmt.int(rOpen)} open`,
           st: K.status('risk', share(m.risk.atRisk.length)),
           delta: delta(m.risk.atRisk.length, m.riskPrev.atRisk.length, { mode: 'abs', goodUp: false, label: `vs ${state.days}D ago` }) },
-        { id: 'cancel', label: 'Likely cancellations', value: fmt.int(m.risk.cancel.length),
+        { id: 'cancel', label: 'Likely cancellations', short: 'Likely cancels', value: fmt.int(m.risk.cancel.length),
           sub: fmt.usd0(m.risk.cancel.reduce((s, r) => s + r.order.value, 0)),
           st: K.status('cancel', share(m.risk.cancel.length)),
           delta: delta(m.risk.cancel.length, m.riskPrev.cancel.length, { mode: 'abs', goodUp: false, label: `vs ${state.days}D ago` }) },
@@ -204,7 +205,7 @@ function kpiDefs(m) {
         { id: 'stockouts', label: 'Stockout SKUs', value: fmt.int(m.invCur.stockouts), sub: 'SKU × site',
           st: K.status('stockouts', m.invCur.stockouts),
           delta: delta(m.invCur.stockouts, m.invPrev.stockouts, { mode: 'abs', goodUp: false, label: 'vs 30D ago' }) },
-        { id: 'turnover', label: 'Inventory turnover', value: m.turnCur == null ? '—' : `${fmt.one(m.turnCur)}×`, sub: 'annualized',
+        { id: 'turnover', label: 'Inventory turnover', short: 'Turnover', value: m.turnCur == null ? '—' : `${fmt.one(m.turnCur)}×`, sub: 'annualized',
           st: K.status('turnover', m.turnCur),
           delta: delta(m.turnCur, m.turnPrev, { mode: 'one', goodUp: true, label: per }) },
         { id: 'dos', label: 'Days of supply', value: fmt.one(m.invCur.dos), sub: 'target 20–45',
@@ -214,10 +215,10 @@ function kpiDefs(m) {
     },
     {
       group: 'Cost', items: [
-        { id: 'cpo', label: 'Cost per order', value: fmt.usd(m.costCur.perOrder), sub: `goal ${fmt.usd(K.TARGETS.costPerOrder)}`,
+        { id: 'cpo', label: 'Cost per order', short: 'Cost / order', value: fmt.usd(m.costCur.perOrder), sub: `goal ${fmt.usd(K.TARGETS.costPerOrder)}`,
           st: K.status('cpo', m.costCur.perOrder),
           delta: delta(m.costCur.perOrder, m.costPrev.perOrder, { mode: 'usd', goodUp: false, label: per }) },
-        { id: 'cps', label: 'Cost per shipment', value: fmt.usd(m.costCur.perShipment), sub: `goal ${fmt.usd(K.TARGETS.costPerShipment)}`,
+        { id: 'cps', label: 'Cost per shipment', short: 'Cost / shipment', value: fmt.usd(m.costCur.perShipment), sub: `goal ${fmt.usd(K.TARGETS.costPerShipment)}`,
           st: K.status('cps', m.costCur.perShipment),
           delta: delta(m.costCur.perShipment, m.costPrev.perShipment, { mode: 'usd', goodUp: false, label: per }) },
       ],
@@ -230,20 +231,22 @@ const STATUS_LABEL = { green: 'On target', orange: 'Watch', red: 'Action needed'
 function renderKpis(m) {
   const groups = kpiDefs(m);
   $('kpis').innerHTML = groups.map((g) => `
+    <div class="kpi-group">
     <div class="kpi-group-label">${g.group}</div>
-    <div class="kpi-grid">
+    <div class="kpi-grid" style="--n:${g.items.length}">
       ${g.items.map((k) => `
         <button type="button" class="kpi" data-kpi="${k.id}" aria-label="${esc(k.label)}: ${esc(k.value)}. ${STATUS_LABEL[k.st]}. Open details">
           <div class="kpi-top">
-            <span class="kpi-label">${esc(k.label)}</span>
+            <span class="kpi-label" title="${esc(k.label)}"><span class="label-full">${esc(k.label)}</span><span class="label-short">${esc(k.short || k.label)}</span></span>
             <span class="dot ${k.st}" title="${STATUS_LABEL[k.st]}"></span>
           </div>
           <div class="kpi-value">${esc(k.value)}${k.sub ? ` <small>${esc(k.sub)}</small>` : ''}</div>
           <div class="kpi-foot">
-            <span class="delta ${k.delta.cls}">${esc(k.delta.text)}</span>
+            <span class="delta ${k.delta.cls}" title="${esc(`${k.delta.val} ${k.delta.label}`)}">${esc(k.delta.val)}<span class="delta-label"> ${esc(k.delta.label)}</span></span>
             <span class="kpi-chevron" aria-hidden="true" style="margin-left:auto">›</span>
           </div>
         </button>`).join('')}
+    </div>
     </div>`).join('');
   return groups.flatMap((g) => g.items);
 }
@@ -266,7 +269,7 @@ function scopeLabel() {
 }
 
 function renderHero(m, tiles) {
-  $('asof').textContent = `${scopeLabel()} · Data as of ${dLong.format(m.now)}`;
+  $('asof').innerHTML = `${esc(scopeLabel())} · Data as of ${dLong.format(m.now)}<span class="delta-note"> · ▲▼ vs prior ${state.days}D</span>`;
   const reds = tiles.filter((t) => t.st === 'red');
   const ambers = tiles.filter((t) => t.st === 'orange');
   const serviceRed = reds.some((t) => ['sla', 'risk', 'cancel'].includes(t.id));
@@ -337,11 +340,12 @@ function renderService(m) {
   const counts = keys.map((k) => m.slaCur.breaches.filter((o) => (byWh ? o.warehouse : o.region) === k).length);
   const palette = [t.blue, t.purple, t.teal, t.orange, t.green, t.red];
   barChart($('c-breach'), {
-    labels: keys.map((k) => (byWh ? whById[k].name : regionById[k].name)),
+    // Region codes (NA / EMEA / APAC) keep the axis readable in small panels; tooltips use full names.
+    labels: keys.map((k) => (byWh ? whById[k].name : k)),
     data: counts,
     colors: keys.map((_, i) => palette[i % palette.length]),
     emptyMsg: 'No breaches in this period',
-    tooltipFormat: (ctx) => `${fmt.int(ctx.raw)} breaches`,
+    tooltipFormat: (ctx) => `${byWh ? '' : `${regionById[keys[ctx.dataIndex]].name}: `}${fmt.int(ctx.raw)} breaches`,
     onClick: (i) => {
       const k = keys[i];
       const name = byWh ? whById[k].name : regionById[k].name;
@@ -360,12 +364,12 @@ function renderRisk(m) {
   $('risk-all').hidden = m.risk.atRisk.length <= 5; // phones show the top 5 only
   $('t-risk').innerHTML = top.length ? `
     <thead><tr>
-      <th>Order</th><th class="hide-sm hide-md">Customer</th><th>Site</th><th class="hide-sm">Carrier</th><th>Promise</th><th>Risk</th><th>Why</th>
+      <th>Order</th><th class="hide-sm hide-md hide-fit">Customer</th><th>Site</th><th class="hide-sm">Carrier</th><th>Promise</th><th>Risk</th><th>Why</th>
     </tr></thead>
     <tbody>${top.map((r) => `
       <tr class="clickable" data-order="${r.order.id}">
         <td class="mono">${r.order.id}</td>
-        <td class="hide-sm hide-md">${esc(r.order.customer)}</td>
+        <td class="hide-sm hide-md hide-fit">${esc(r.order.customer)}</td>
         <td>${esc(whById[r.order.warehouse].name)}</td>
         <td class="hide-sm">${esc(carrierById[r.order.carrier].name)}</td>
         <td>${dueText(r.order, m.now)}</td>
@@ -389,6 +393,9 @@ function renderInventory(m) {
   });
 
   const agingColors = [t.green, t.orange, t.red];
+  const agingTotal = m.aging.reduce((s, b) => s + b.value, 0);
+  $('aging-legend').innerHTML = agingTotal ? m.aging.map((b, i) =>
+    `<span><i class="dot" style="background:${agingColors[i]}"></i>${esc(b.label)} <b>${fmt.pct(b.value / agingTotal)}</b></span>`).join('') : '';
   doughnutChart($('c-aging'), {
     labels: m.aging.map((b) => b.label),
     data: m.aging.map((b) => Math.round(b.value)),
@@ -416,14 +423,14 @@ const dosOf = (p) => (p.dailyDemand ? p.onHand / p.dailyDemand : p.onHand ? Infi
 function renderCarriers(m) {
   const t = tokens();
   $('t-carrier').innerHTML = m.carriers.length ? `
-    <thead><tr><th>Carrier</th><th>On time</th><th class="num hide-sm">Shipments</th><th class="num">Cost / shipment</th><th class="num">Breach share</th></tr></thead>
+    <thead><tr><th>Carrier</th><th>On time</th><th class="num hide-sm hide-fit">Shipments</th><th class="num">Cost / ship</th><th class="num">Breach share</th></tr></thead>
     <tbody>${m.carriers.map((c) => {
       const st = K.status('sla', c.onTimePct);
       return `<tr class="clickable" data-carrier="${c.carrier.id}">
         <td><span class="dot ${st}" style="margin-right:8px"></span>${esc(c.carrier.name)}</td>
         <td class="wide"><div style="display:flex;align-items:center;gap:10px"><b style="font-weight:600;width:52px">${fmt.pct(c.onTimePct)}</b>
           <div class="bar-inline" style="flex:1"><div style="width:${(c.onTimePct || 0) * 100}%;background:${statusColor(t, st)}"></div></div></div></td>
-        <td class="num hide-sm">${fmt.int(c.shipped)}</td>
+        <td class="num hide-sm hide-fit">${fmt.int(c.shipped)}</td>
         <td class="num">${fmt.usd(c.perShipment)}</td>
         <td class="num">${fmt.pct(c.breachShare)}</td>
       </tr>`;
@@ -660,16 +667,16 @@ $('export-pdf').addEventListener('click', async () => {
   let failed = false;
   try {
     root.dataset.theme = 'light';
+    root.classList.add('fit');
     document.body.classList.add('exporting');
     setAnimate(false);
     render();
     // Charts draw synchronously with animation off; a short tick lets layout settle.
     // (Not requestAnimationFrame: it never fires while the tab is in the background.)
     await new Promise((r) => setTimeout(r, 60));
-    const s = [...document.querySelectorAll('main > section')];
     const slug = scopeLabel().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     await exportPdf({
-      pages: [[s[0], s[1]], [s[2], s[3]], [s[4], s[5]]],
+      pages: [[document.querySelector('main.dash')]],
       title: 'Logistics Overview',
       subtitle: `${scopeLabel()} · Last ${state.days} days`,
       asOf: `Data as of ${dLong.format(data.now)}`,
@@ -681,6 +688,7 @@ $('export-pdf').addEventListener('click', async () => {
   } finally {
     if (prevTheme) root.dataset.theme = prevTheme; else delete root.dataset.theme;
     document.body.classList.remove('exporting');
+    applyFit();
     setAnimate(true);
     render();
     btn.disabled = false;
@@ -689,9 +697,18 @@ $('export-pdf').addEventListener('click', async () => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Single-screen (fit) layout on desktop. Must match the query in index.html's head script.
+// ---------------------------------------------------------------------------
+const FIT_QUERY = matchMedia('(min-width: 1200px) and (min-height: 620px)');
+function applyFit() { root.classList.toggle('fit', FIT_QUERY.matches); }
+FIT_QUERY.addEventListener('change', () => { applyFit(); render(); });
+
 if (window.Chart) {
   Chart.defaults.font.family = tokens().font;
 }
+applyFit();
+for (const head of document.querySelectorAll('.card-head')) head.title = head.querySelector('.card-sub')?.textContent || '';
 paintThemeButton();
 buildFilters();
 render();

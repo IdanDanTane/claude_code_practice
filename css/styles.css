@@ -40,7 +40,7 @@
   --shadow-sheet: -20px 0 60px rgba(0, 0, 0, 0.18);
 
   --gutter: clamp(16px, 4vw, 40px);
-  --max: 1360px;
+  --max: none; /* use the full screen width */
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --seg-active: #ffffff;
   --focus-ring: rgba(0, 102, 204, 0.5);
@@ -210,40 +210,53 @@ button { cursor: pointer; }
 .headline-status { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 6px 12px 6px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; }
 
 /* ==========================================================================
-   Sections + cards
+   Cards + panel grid
+   Desktop: 12-column grid (also used by the fit layout and PDF export).
+   Tablet: 2 columns. Phone: 1 column. Tablet/phone rules are scoped to
+   html:not(.fit) so the PDF export (which forces .fit) always gets desktop.
    ========================================================================== */
-.section { padding: 28px 0 4px; }
-.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.section-head h2 { font-size: 24px; letter-spacing: -0.025em; margin: 0; font-weight: 700; }
-.section-head .sub { color: var(--text-2); font-size: 14px; }
-
 .card {
   background: var(--surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   padding: 20px 22px;
   min-width: 0;
+  display: flex; flex-direction: column;
 }
+.card-head { margin-bottom: 14px; min-width: 0; }
 .card h3 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
-.card .card-sub { color: var(--text-2); font-size: 13px; margin: 2px 0 14px; }
+.card .card-sub { color: var(--text-2); font-size: 13px; margin: 2px 0 0; }
 
-.grid { display: grid; gap: 16px; }
-.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.span-2 { grid-column: span 2; }
+.panels { display: grid; gap: 16px; margin-top: 20px; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-flow: row dense; }
+.p-sla { grid-column: span 4; }
+.p-breach { grid-column: span 2; }
+.p-risk { grid-column: span 6; }
+.p-stockout, .p-aging, .p-dos, .p-cost { grid-column: span 2; }
+.p-carrier { grid-column: span 4; }
+
+@media (max-width: 1199px) {
+  html:not(.fit) .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html:not(.fit) .panels > .card { grid-column: auto; }
+  html:not(.fit) .panels > .p-risk, html:not(.fit) .panels > .p-carrier { grid-column: 1 / -1; }
+}
 @media (max-width: 1100px) and (min-width: 641px) {
   .hide-md { display: none; } /* tablet: drop secondary columns so key ones stay visible */
 }
-@media (max-width: 960px) {
-  .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); }
-  .span-2 { grid-column: auto; }
+@media (max-width: 640px) {
+  html:not(.fit) .panels { grid-template-columns: minmax(0, 1fr); gap: 12px; }
 }
 
 /* ==========================================================================
    KPI tiles
    ========================================================================== */
-.kpi-group-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: 18px 0 8px; }
-.kpi-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.kpis { display: grid; gap: 14px 16px; margin-top: 8px; }
+.kpi-group { min-width: 0; }
+.kpi-group-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: 0 0 8px; }
+.kpi-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+@media (min-width: 1200px) {
+  .kpis { grid-template-columns: 4fr 3fr 2fr; }
+  .kpi-grid { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+}
 .kpi {
   position: relative; text-align: left; border: 0; width: 100%;
   background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow);
@@ -261,6 +274,8 @@ button { cursor: pointer; }
 .delta.good { color: var(--green); }
 .delta.bad { color: var(--red); }
 .delta.flat { color: var(--text-3); }
+.label-short, .delta-note { display: none; }
+.chips .more { display: none; }
 .kpi-chevron { color: var(--text-3); opacity: 0; transition: opacity 0.2s; }
 .kpi:hover .kpi-chevron { opacity: 1; }
 
@@ -280,8 +295,7 @@ button { cursor: pointer; }
 /* ==========================================================================
    Charts
    ========================================================================== */
-.chart-box { position: relative; height: 260px; }
-.chart-box.short { height: 220px; }
+.chart-box { position: relative; height: 240px; }
 .chart-box canvas { cursor: pointer; }
 .empty { display: grid; place-items: center; height: 100%; color: var(--text-3); font-size: 14px; text-align: center; }
 .legend-inline { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-2); margin-top: 10px; }
@@ -363,17 +377,11 @@ footer a { color: var(--blue); text-decoration: none; }
   .kpi-value small { display: block; font-size: 13px; margin-top: 2px; }
   .kpi-foot { font-size: 11.5px; }
   .topbar { position: relative; } /* two rows of controls would eat ~20% of a phone screen if pinned */
-  .select { max-width: 140px; min-height: 36px; }
-  .segmented button { min-height: 32px; padding: 4px 14px; }
-  .btn-plain { min-height: 36px; }
-  .icon-btn { width: 36px; height: 36px; }
-  .btn-primary { min-height: 36px; }
+  .select { max-width: 140px; }
   .filters { width: 100%; }
   .sheet-head, .sheet-body { padding-left: 16px; padding-right: 16px; }
   .hide-sm { display: none; }
 
-  .section-head { flex-direction: column; align-items: flex-start; gap: 2px; }
-  .section-head h2 { font-size: 22px; }
   .card-actions .btn-plain { white-space: nowrap; }
 
   /* Tables become stacked cards: first cell is the title, the rest are labelled
@@ -406,26 +414,120 @@ footer a { color: var(--blue); text-decoration: none; }
   body:not(.exporting) table.data td > div[style*="display:flex"] { width: 100%; }
 }
 
+/* Tablet tables: show the top two reasons plus "+N" so rows stay one line tall. */
+@media (min-width: 641px) and (max-width: 1199px) {
+  .chips { flex-wrap: nowrap; min-width: 0; }
+  .chips .pill:nth-child(n + 3):not(.more) { display: none; }
+  .chips .more { display: inline-flex; }
+  table.data th, table.data td { padding-left: 7px; padding-right: 7px; }
+  .riskbar { min-width: 64px; }
+}
+
+/* Touch-friendly controls on tablets, phones and any touch screen. */
+@media (max-width: 1199px), (pointer: coarse) {
+  .select { min-height: 36px; }
+  .segmented button { min-height: 32px; padding: 4px 14px; }
+  .btn-plain { min-height: 36px; }
+  .icon-btn { width: 36px; height: 36px; }
+  .btn-primary { min-height: 36px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
 /* ==========================================================================
-   PDF export: lay out at a fixed desktop width regardless of the viewport,
-   so a PDF made on a phone or narrow window looks the same as on desktop.
+   Fit layout: on desktop (html.fit, set from FIT_QUERY in app.js and the inline
+   head script) the whole dashboard fits one screen with no page scroll:
+   summary row, KPI strip, then two rows of panels that share the leftover height.
    ========================================================================== */
-body.exporting main.wrap { width: 1240px; max-width: none; padding: 0 24px; }
-body.exporting .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-body.exporting .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-body.exporting .span-2 { grid-column: span 2; }
-body.exporting .kpi-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-body.exporting .kpi { padding: 16px 18px; }
-body.exporting .kpi-value { font-size: 34px; }
-body.exporting .kpi-value small { display: inline; font-size: 18px; margin: 0; }
-body.exporting .kpi-foot { font-size: 12.5px; }
-body.exporting .card { padding: 20px 22px; }
-body.exporting .table-wrap { overflow: visible; margin: 0; padding: 0; }
-body.exporting .section-head { flex-direction: row; align-items: baseline; }
-body.exporting .hide-sm, body.exporting .hide-md { display: table-cell; }
-body.exporting .hero { padding-top: 8px; }
+html.fit body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+html.fit .topbar { flex: none; }
+html.fit main.dash {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; /* scroll only as a last resort */
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px;
+  padding-top: 12px; padding-bottom: 14px; width: 100%;
+}
+html.fit footer { display: none; }
+
+html.fit .hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 28px; padding: 0; }
+html.fit .eyebrow { font-size: 12.5px; margin: 0 0 2px; white-space: nowrap; }
+html.fit .hero h1 { font-size: clamp(22px, 2.7vh, 32px); white-space: nowrap; }
+html.fit .hero p.lede {
+  font-size: clamp(13px, 1.45vh, 15px); margin: 0; max-width: none;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+html.fit .headline-status { margin-top: 0; white-space: nowrap; }
+
+html.fit .kpis { grid-template-columns: 4fr 3fr 2fr; margin-top: 0; }
+html.fit .kpi-grid { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 10px; }
+html.fit .kpi-group-label { font-size: 11px; margin-bottom: 6px; }
+html.fit .kpi { padding: clamp(8px, 1.2vh, 14px) 12px; gap: 2px; border-radius: 14px; }
+html.fit .kpi-label { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.fit .kpi-value { font-size: clamp(20px, 2.8vh, 32px); margin-top: 0; }
+html.fit .kpi-value small { display: block; font-size: 11.5px; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; }
+html.fit .kpi-foot { font-size: 11.5px; min-height: 0; }
+html.fit .delta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+html.fit .panels { margin-top: 0; min-height: 0; gap: 12px; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(150px, 1fr)); }
+html.fit .card { padding: 12px 14px; min-height: 0; border-radius: 14px; }
+html.fit .card-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+html.fit .card h3 { font-size: 13.5px; white-space: nowrap; }
+html.fit .card .card-sub { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+html.fit .chart-box { flex: 1 1 auto; height: auto; min-height: 0; }
+html.fit .legend-inline { margin-top: 6px; font-size: 11.5px; gap: 4px 10px; }
+html.fit .card-actions { margin-bottom: 4px; font-size: 12.5px; }
+html.fit .table-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; margin: 0; padding: 0; }
+html.fit table.data { font-size: 12.5px; }
+html.fit table.data th { position: sticky; top: 0; z-index: 1; background: var(--surface); padding: 5px 8px; font-size: 11px; }
+html.fit table.data td { padding: 6px 8px; }
+html.fit .pill { font-size: 11px; padding: 1px 7px; }
+html.fit .chips { min-width: 0; }
+html.fit .riskbar { min-width: 70px; }
+html.fit .bar-inline { min-width: 40px; }
+html.fit .hide-sm, html.fit .hide-md { display: table-cell; }
+html.fit .hide-fit { display: none; }
+html.fit .chips { flex-wrap: nowrap; }
+html.fit .chips .pill:nth-child(n + 3):not(.more) { display: none; }
+html.fit .chips .more { display: inline-flex; }
+
+/* Small panels (2 of 12 columns) only have room for their title below ~2000px;
+   the subtitle stays available as the title-row tooltip. */
+@media (max-width: 1999px) {
+  html.fit .p-breach .card-sub, html.fit .p-stockout .card-sub, html.fit .p-aging .card-sub,
+  html.fit .p-dos .card-sub, html.fit .p-cost .card-sub { display: none; }
+}
+
+/* Smaller desktop screens (e.g. 1366/1440/1536 wide): trim secondary text, keep it in tooltips. */
+@media (max-width: 1679px) {
+  html.fit .label-full, html.fit .delta-label { display: none; }
+  html.fit .label-short { display: inline; }
+  html.fit .delta-note { display: inline; }
+  html.fit #t-carrier .bar-inline { display: none; } /* the status dot already carries it */
+  html.fit .riskbar { min-width: 56px; }
+  html.fit table.data td, html.fit table.data th { padding-left: 6px; padding-right: 6px; }
+}
+
+/* At-risk panel on the fit layout: summary + "View all" share the title row,
+   so the table gets every remaining pixel. */
+html.fit .p-risk { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); column-gap: 14px; }
+html.fit .p-risk .card-sub { display: none; }
+html.fit .p-risk .card-actions { margin: 0 0 6px; min-width: 0; }
+html.fit .p-risk .card-actions #risk-summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+html.fit .p-risk .table-wrap { grid-column: 1 / -1; }
+
+/* ==========================================================================
+   PDF export: always the fit layout on a fixed 16:9 canvas (1600x900), so the
+   PDF is the same one-screen snapshot whatever device it is exported from.
+   ========================================================================== */
+body.exporting main.dash { width: 1600px; height: 900px; max-width: none; flex: none; overflow: hidden; padding: 16px 24px; }
 body.exporting #risk-all { visibility: hidden; }
+/* html2canvas garbles text with the inherited negative tracking (e.g. "Pas tpromis e"); render it at 0. */
+body.exporting { letter-spacing: 0; }
+/* html2canvas mis-places text inside inline-flex boxes ("Past  promise", overlapping legend
+   labels), so pills and legend items render as inline-block in the PDF. */
+body.exporting .pill, body.exporting .legend-inline > span { display: inline-block; }
+body.exporting .chips .more { display: inline-block; }
+body.exporting .pill .dot, body.exporting .legend-inline .dot { margin-right: 6px; vertical-align: 1px; }
+body.exporting .chips .pill + .pill { margin-left: 4px; }
+body.exporting .legend-inline { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }

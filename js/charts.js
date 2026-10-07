@@ -135,10 +135,7 @@ export function doughnutChart(canvas, { labels, data, colors, onClick, tooltipFo
       onClick: onClick ? (_e, els) => { if (els.length) onClick(els[0].index); } : undefined,
       onHover: onClick ? (e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; } : undefined,
       plugins: {
-        legend: {
-          position: 'right',
-          labels: { color: t.text2, font: { family: t.font, size: 12 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, padding: 12 },
-        },
+        legend: { display: false }, // callers render a compact HTML legend that also shows values
         tooltip: {
           backgroundColor: t.surface, titleColor: t.text, bodyColor: t.text2, borderColor: t.hairline, borderWidth: 1,
           padding: 10, cornerRadius: 10, displayColors: false,

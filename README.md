@@ -1,6 +1,6 @@
 # Logistics & Warehouse Executive Dashboard
 
-An Apple-style executive dashboard for the COO and CEO. It covers SLA compliance, orders at risk of delay or cancellation, inventory health, and cost and carrier performance across a multi-region warehouse network.
+An Apple-style executive dashboard for the COO and CEO of a phone accessories brand (chargers, cables, earphones/TWS, power banks, creator gear, mounts, cases). It covers SLA compliance, orders at risk of delay or cancellation, inventory health, and cost and carrier performance across a multi-region warehouse network, all on one 16:9 screen on desktop.
 
 **Live:** https://idandantane.github.io/claude_code_practice/
 

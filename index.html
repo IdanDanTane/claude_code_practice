@@ -4,11 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Logistics Overview</title>
-  <meta name="description" content="Executive logistics and warehouse dashboard: SLA, at-risk orders, inventory health, cost and carriers.">
+  <meta name="description" content="Executive logistics and warehouse dashboard for a phone accessories business: SLA, at-risk orders, inventory health, cost and carriers.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230071e3'/%3E%3Cpath d='M8 12l8-4 8 4v9l-8 4-8-4z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M8 12l8 4 8-4M16 16v9' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E">
   <script>
     // Apply the saved theme before first paint so there is no flash.
     try { var t = localStorage.getItem('logistics-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+    // Desktop screens get the single-screen (fit) layout; must match FIT_QUERY in js/app.js.
+    if (matchMedia('(min-width: 1200px) and (min-height: 620px)').matches) document.documentElement.classList.add('fit');
   </script>
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -45,82 +47,57 @@
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="hero">
-      <p class="eyebrow" id="asof"></p>
-      <h1 id="headline">Network overview</h1>
+  <main class="wrap dash">
+    <section class="hero" aria-label="Summary">
+      <div class="hero-title">
+        <p class="eyebrow" id="asof"></p>
+        <h1 id="headline">Network overview</h1>
+      </div>
       <p class="lede" id="lede"></p>
       <div id="headline-status"></div>
     </section>
 
-    <section class="section" aria-labelledby="kpi-h">
-      <h2 id="kpi-h" class="sr-only">Key indicators</h2>
-      <div id="kpis"></div>
-    </section>
+    <section class="kpis" id="kpis" aria-label="Key indicators"></section>
 
-    <section class="section" aria-labelledby="svc-h">
-      <div class="section-head"><h2 id="svc-h">Service</h2><span class="sub">Are we keeping our promises?</span></div>
-      <div class="grid grid-3">
-        <div class="card span-2">
-          <h3>SLA compliance</h3>
-          <p class="card-sub">Daily on-time delivery rate against the 95% target</p>
-          <div class="chart-box"><canvas id="c-sla" aria-label="SLA compliance trend"></canvas></div>
-        </div>
-        <div class="card">
-          <h3>Breaches by region</h3>
-          <p class="card-sub">Late deliveries and overdue open orders</p>
-          <div class="chart-box"><canvas id="c-breach" aria-label="SLA breaches by region"></canvas></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="risk-h">
-      <div class="section-head"><h2 id="risk-h">Orders at risk</h2><span class="sub">Open orders most likely to be delayed or cancelled</span></div>
-      <div class="card">
+    <div class="panels">
+      <article class="card p-sla">
+        <header class="card-head"><h3>SLA compliance</h3><p class="card-sub">Daily on-time rate vs 95% target</p></header>
+        <div class="chart-box"><canvas id="c-sla" aria-label="SLA compliance trend"></canvas></div>
+      </article>
+      <article class="card p-breach">
+        <header class="card-head"><h3>Breaches by region</h3><p class="card-sub">Late or overdue orders</p></header>
+        <div class="chart-box"><canvas id="c-breach" aria-label="SLA breaches by region"></canvas></div>
+      </article>
+      <article class="card p-risk">
+        <header class="card-head"><h3>Orders at risk</h3><p class="card-sub">Most likely to be delayed or cancelled</p></header>
         <div class="card-actions">
           <div id="risk-summary" class="muted"></div>
           <button type="button" class="btn-plain" id="risk-all">View all ›</button>
         </div>
         <div class="table-wrap"><table class="data" id="t-risk"></table></div>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="inv-h">
-      <div class="section-head"><h2 id="inv-h">Inventory health</h2><span class="sub">Stock availability and age</span></div>
-      <div class="grid grid-3">
-        <div class="card">
-          <h3>Stockouts by warehouse</h3>
-          <p class="card-sub">SKUs at zero with open demand</p>
-          <div class="chart-box short"><canvas id="c-stockout" aria-label="Stockouts by warehouse"></canvas></div>
-        </div>
-        <div class="card">
-          <h3>Stock age</h3>
-          <p class="card-sub">Share of inventory value by days since receipt</p>
-          <div class="chart-box short"><canvas id="c-aging" aria-label="Stock aging"></canvas></div>
-        </div>
-        <div class="card">
-          <h3>Days of supply</h3>
-          <p class="card-sub">Target band 20–45 days</p>
-          <div class="chart-box short"><canvas id="c-dos" aria-label="Days of supply by warehouse"></canvas></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="car-h">
-      <div class="section-head"><h2 id="car-h">Carriers &amp; cost</h2><span class="sub">Who delivers, and at what price</span></div>
-      <div class="grid grid-3">
-        <div class="card span-2">
-          <h3>Carrier scorecard</h3>
-          <p class="card-sub">Ranked by on-time delivery in the selected period</p>
-          <div class="table-wrap"><table class="data" id="t-carrier"></table></div>
-        </div>
-        <div class="card">
-          <h3>Cost per order</h3>
-          <p class="card-sub">Weekly, shipping + fulfillment</p>
-          <div class="chart-box short"><canvas id="c-cost" aria-label="Cost per order trend"></canvas></div>
-        </div>
-      </div>
-    </section>
+      </article>
+      <article class="card p-stockout">
+        <header class="card-head"><h3>Stockouts by warehouse</h3><p class="card-sub">Zero stock, open demand</p></header>
+        <div class="chart-box"><canvas id="c-stockout" aria-label="Stockouts by warehouse"></canvas></div>
+      </article>
+      <article class="card p-aging">
+        <header class="card-head"><h3>Stock age</h3><p class="card-sub">Inventory value by days since receipt</p></header>
+        <div class="chart-box"><canvas id="c-aging" aria-label="Stock aging"></canvas></div>
+        <div class="legend-inline" id="aging-legend"></div>
+      </article>
+      <article class="card p-dos">
+        <header class="card-head"><h3>Days of supply</h3><p class="card-sub">Target band 20–45 days</p></header>
+        <div class="chart-box"><canvas id="c-dos" aria-label="Days of supply by warehouse"></canvas></div>
+      </article>
+      <article class="card p-carrier">
+        <header class="card-head"><h3>Carrier scorecard</h3><p class="card-sub">Ranked by on-time delivery</p></header>
+        <div class="table-wrap"><table class="data" id="t-carrier"></table></div>
+      </article>
+      <article class="card p-cost">
+        <header class="card-head"><h3>Cost per order</h3><p class="card-sub">Weekly, shipping + fulfillment</p></header>
+        <div class="chart-box"><canvas id="c-cost" aria-label="Cost per order trend"></canvas></div>
+      </article>
+    </div>
   </main>
 
   <footer class="wrap">
