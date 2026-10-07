@@ -6,6 +6,7 @@ An Apple-style executive dashboard for the COO and CEO of a phone accessories br
 
 - Product spec: [spec.md](spec.md)
 - Working rules and change log: [practice.md](practice.md)
+- Airtable import (CSV files, steps, data dictionary): [data/airtable/README.md](data/airtable/README.md)
 
 Features: KPI tiles with drill-down, filters (shareable via URL), light/dark toggle, and one-click **Export PDF** for board packs and email.
 

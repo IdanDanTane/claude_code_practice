@@ -1,0 +1,7 @@
+Warehouse ID,Warehouse,City,Region ID,Capacity
+RNO,Reno,"Reno, NV",NA,42000
+MEM,Memphis,"Memphis, TN",NA,36000
+RTM,Rotterdam,"Rotterdam, NL",EMEA,38000
+FRA,Frankfurt,"Frankfurt, DE",EMEA,24000
+SIN,Singapore,"Singapore, SG",APAC,26000
+SYD,Sydney,"Sydney, AU",APAC,18000

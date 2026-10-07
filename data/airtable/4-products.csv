@@ -1,0 +1,81 @@
+SKU,Product,Variant,Category,Unit cost
+CHG-101,20W USB-C Wall Charger,White,Chargers,3.98
+CHG-102,20W USB-C Wall Charger,Black,Chargers,3.63
+CHG-103,35W Dual USB-C Charger,White,Chargers,7.32
+CHG-104,35W Dual USB-C Charger,Black,Chargers,7.26
+CHG-105,65W GaN Charger,White,Chargers,13.27
+CHG-106,65W GaN Charger,Black,Chargers,13.38
+CHG-107,15W Wireless Charging Pad,White,Chargers,6.04
+CHG-108,15W Wireless Charging Pad,Black,Chargers,6.20
+CHG-109,3-in-1 Magnetic Charging Stand,White,Chargers,17.04
+CHG-110,3-in-1 Magnetic Charging Stand,Black,Chargers,17.12
+CHG-111,30W Car Charger,White,Chargers,4.58
+CHG-112,30W Car Charger,Black,Chargers,4.53
+CBL-101,USB-C to USB-C Cable 1m,White,Cables,1.40
+CBL-102,USB-C to USB-C Cable 1m,Black,Cables,1.42
+CBL-103,USB-C to USB-C Cable 2m,White,Cables,2.17
+CBL-104,USB-C to USB-C Cable 2m,Black,Cables,2.02
+CBL-105,USB-C to Lightning Cable 1m,White,Cables,2.52
+CBL-106,USB-C to Lightning Cable 1m,Black,Cables,2.57
+CBL-107,Braided USB-C Cable 3m,White,Cables,3.32
+CBL-108,Braided USB-C Cable 3m,Black,Cables,3.28
+CBL-109,USB-A to USB-C Cable 1m,White,Cables,1.05
+CBL-110,USB-A to USB-C Cable 1m,Black,Cables,1.09
+CBL-111,Magnetic Charging Cable,White,Cables,2.96
+CBL-112,Magnetic Charging Cable,Black,Cables,3.01
+AUD-101,Wired Earphones USB-C,White,Audio,3.41
+AUD-102,Wired Earphones USB-C,Black,Audio,3.40
+AUD-103,Wired Earphones 3.5mm,White,Audio,2.23
+AUD-104,Wired Earphones 3.5mm,Black,Audio,2.27
+AUD-105,TWS Earbuds,White,Audio,9.51
+AUD-106,TWS Earbuds,Black,Audio,9.70
+AUD-107,TWS Earbuds ANC,White,Audio,19.13
+AUD-108,TWS Earbuds ANC,Black,Audio,18.32
+AUD-109,TWS Sport Earbuds,White,Audio,12.81
+AUD-110,TWS Sport Earbuds,Black,Audio,12.49
+AUD-111,Bluetooth Neckband,White,Audio,7.64
+AUD-112,Bluetooth Neckband,Black,Audio,7.67
+PWR-101,"Power Bank 5,000mAh",Black,Power Banks,5.86
+PWR-102,"Power Bank 5,000mAh",White,Power Banks,5.81
+PWR-103,"Power Bank 10,000mAh",Black,Power Banks,8.72
+PWR-104,"Power Bank 10,000mAh",White,Power Banks,8.11
+PWR-105,"Power Bank 20,000mAh PD",Black,Power Banks,13.89
+PWR-106,"Power Bank 20,000mAh PD",White,Power Banks,13.93
+PWR-107,"Magnetic Power Bank 10,000mAh",Black,Power Banks,12.21
+PWR-108,"Magnetic Power Bank 10,000mAh",White,Power Banks,13.37
+PWR-109,"Slim Power Bank 5,000mAh",Black,Power Banks,6.94
+PWR-110,"Slim Power Bank 5,000mAh",White,Power Banks,7.06
+CRT-101,Selfie Stick Tripod,Black,Creator Gear,5.52
+CRT-102,Selfie Stick Tripod,White,Creator Gear,5.21
+CRT-103,Bluetooth Selfie Stick,Black,Creator Gear,3.98
+CRT-104,Bluetooth Selfie Stick,White,Creator Gear,4.01
+CRT-105,"10"" Ring Light",Black,Creator Gear,7.15
+CRT-106,"10"" Ring Light",White,Creator Gear,7.50
+CRT-107,"18"" Ring Light with Stand",Black,Creator Gear,19.02
+CRT-108,"18"" Ring Light with Stand",White,Creator Gear,20.23
+CRT-109,Clip-on Fill Light,Black,Creator Gear,3.35
+CRT-110,Clip-on Fill Light,White,Creator Gear,3.44
+CRT-111,3-Axis Phone Gimbal,Black,Creator Gear,26.53
+CRT-112,3-Axis Phone Gimbal,White,Creator Gear,25.65
+CRT-113,Mini Phone Tripod,Black,Creator Gear,2.69
+CRT-114,Mini Phone Tripod,White,Creator Gear,2.81
+MNT-101,Magnetic Car Mount,Black,Mounts,3.72
+MNT-102,Magnetic Car Mount,Silver,Mounts,3.60
+MNT-103,Car Vent Mount,Black,Mounts,2.40
+MNT-104,Car Vent Mount,Silver,Mounts,2.32
+MNT-105,Bike Phone Mount,Black,Mounts,4.41
+MNT-106,Bike Phone Mount,Silver,Mounts,4.48
+MNT-107,Phone Grip Stand,Black,Mounts,0.91
+MNT-108,Phone Grip Stand,Silver,Mounts,0.87
+PRT-101,Clear Case,"6.1""",Protection,1.25
+PRT-102,Clear Case,"6.7""",Protection,1.17
+PRT-103,Silicone Case,"6.1""",Protection,1.78
+PRT-104,Silicone Case,"6.7""",Protection,1.85
+PRT-105,Rugged Case,"6.1""",Protection,3.53
+PRT-106,Rugged Case,"6.7""",Protection,3.41
+PRT-107,Tempered Glass Screen Protector,"6.1""",Protection,0.58
+PRT-108,Tempered Glass Screen Protector,"6.7""",Protection,0.63
+PRT-109,Privacy Screen Protector,"6.1""",Protection,1.10
+PRT-110,Privacy Screen Protector,"6.7""",Protection,1.10
+PRT-111,Camera Lens Protector,"6.1""",Protection,0.70
+PRT-112,Camera Lens Protector,"6.7""",Protection,0.70
