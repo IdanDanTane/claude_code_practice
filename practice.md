@@ -8,7 +8,7 @@
 5. Mock data must stay **deterministic** (fixed seed), so screenshots and numbers are reproducible.
 6. KPI math lives in pure functions in `js/kpis.js`. The UI never calculates business numbers itself.
 7. **Every change must work in light AND dark mode, be readable, and be responsive on mobile and desktop.** Nothing is pushed until it passes the checklist below.
-8.**Whenever `js/data.js` changes, re-run `node scripts/export-airtable.mjs`** and commit the regenerated `data/airtable/*.csv` in the same commit, so Airtable and the dashboard never drift. Airtable field names are a contract for the future sync; don't rename them.
+8. **Whenever `js/data.js` changes, re-run `node scripts/export-airtable.mjs`** and commit the regenerated `data/airtable/*.csv` in the same commit, so Airtable and the dashboard never drift. Airtable field names are a contract for the future sync; don't rename them.
 
 ## Definition of done (run for every change)
 - [ ] **Light mode and dark mode**: check both, using the OS setting and the header toggle.
